@@ -2,7 +2,6 @@ package com.cinemabrowser.app
 
 import android.app.Activity
 import android.os.Bundle
-import android.view.KeyEvent
 import android.webkit.CookieManager
 import android.webkit.WebChromeClient
 import android.webkit.WebResourceRequest
@@ -29,9 +28,13 @@ class MainActivity : Activity() {
             displayZoomControls = false
             cacheMode = WebSettings.LOAD_NO_CACHE
             saveFormData = false
-            userAgentString = userAgentString.replace("; wv", "")
+            // Use a normal mobile Chrome-style UA instead of the Android WebView UA.
+            // Some search providers reject requests that identify themselves as WebView clients.
+            userAgentString = "Mozilla/5.0 (Linux; Android 15) AppleWebKit/537.36 " +
+                    "(KHTML, like Gecko) Chrome/140.0.0.0 Mobile Safari/537.36"
         }
         CookieManager.getInstance().setAcceptCookie(true)
+        CookieManager.getInstance().setAcceptThirdPartyCookies(webView, true)
         webView.webViewClient = object : WebViewClient() {
             override fun shouldOverrideUrlLoading(view: WebView, request: WebResourceRequest): Boolean {
                 val uri = request.url
@@ -43,8 +46,20 @@ class MainActivity : Activity() {
             }
 
             override fun onPageFinished(view: WebView, url: String) {
-                // Keep navigation usable during the current session, but never persist it.
-                view.clearCache(true)
+                // Keep cache/session state during the current visit; all local data is cleared
+                // when a new app session starts or the activity is destroyed.
+                // Google can occasionally show an anti-automation page for a shared/mobile IP.
+                // If that happens, fall back to DuckDuckGo so the search bar remains usable.
+                val parsed = Uri.parse(url)
+                if (parsed.host?.contains("google.com", ignoreCase = true) == true &&
+                    parsed.path?.contains("/sorry", ignoreCase = true) == true) {
+                    val originalQuery = parsed.getQueryParameter("q")
+                    if (!originalQuery.isNullOrBlank()) {
+                        view.loadUrl("https://duckduckgo.com/?q=${Uri.encode(originalQuery)}")
+                    } else {
+                        view.loadUrl("https://duckduckgo.com/")
+                    }
+                }
             }
         }
         webView.webChromeClient = WebChromeClient()

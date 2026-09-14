@@ -103,7 +103,7 @@ document.getElementById('next').onclick=next;document.getElementById('prev').onc
 setInterval(next,12000);
 function tick(){const d=new Date();document.getElementById('time').textContent=d.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});document.getElementById('date').textContent=d.toLocaleDateString([], {weekday:'short',day:'2-digit',month:'short'}).toUpperCase().replaceAll(',',' •')}tick();setInterval(tick,1000);
 const form=document.getElementById('searchForm'), q=document.getElementById('query');
-function go(){const v=q.value.trim();if(!v)return;let url;if(/^https?:\/\//i.test(v))url=v;else if(/^[\w-]+\.[a-z]{2,}(\/.*)?$/i.test(v))url='https://'+v;else url='https://www.google.com/search?q='+encodeURIComponent(v);location.href=url}
+function go(){const v=q.value.trim();if(!v)return;let url;if(/^https?:\/\//i.test(v))url=v;else if(/^[\w-]+\.[a-z]{2,}(\/.*)?$/i.test(v))url='https://'+v;else url='https://www.google.com/search?client=ms-android-google&sourceid=chrome-mobile&ie=UTF-8&q='+encodeURIComponent(v);location.href=url}
 form.addEventListener('submit',e=>{e.preventDefault();go()});
 document.getElementById('toolBtn').onclick=()=>document.getElementById('menu').classList.toggle('open');
 document.addEventListener('click',e=>{if(!e.target.closest('#tools'))document.getElementById('menu').classList.remove('open')});
