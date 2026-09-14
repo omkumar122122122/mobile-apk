@@ -1,0 +1,4 @@
+37 bundled mobile wallpapers are stored in:
+app/src/main/assets/dashboard/wallpapers/
+
+The dashboard shuffles the set at the start of each session and rotates automatically every 12 seconds.

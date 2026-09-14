@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="theme-color" content="#050608">
+<title>Cinematic Browser</title>
+<style>
+:root{--glass:rgba(7,9,13,.58);--line:rgba(255,255,255,.14);--muted:rgba(255,255,255,.68)}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#050608;color:#fff;font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+#stage{position:fixed;inset:0;background:#050608}
+.wall{position:absolute;inset:0;background-position:center;background-size:cover;opacity:0;transform:scale(1.045);transition:opacity .8s ease,transform 7s ease}
+.wall.active{opacity:1;transform:scale(1)}
+#shade{position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.20) 0%,rgba(0,0,0,.04) 34%,rgba(0,0,0,.38) 66%,rgba(0,0,0,.88) 100%),linear-gradient(90deg,rgba(0,0,0,.55),transparent 60%)}
+#top{position:absolute;top:0;left:0;right:0;padding:calc(env(safe-area-inset-top) + 14px) 16px 0;display:flex;justify-content:space-between;align-items:flex-start}
+.brand{display:flex;align-items:center;gap:9px;font-size:12px;letter-spacing:2px;font-weight:800;text-shadow:0 2px 10px #000}.mark{width:27px;height:27px;border:1px solid rgba(255,255,255,.5);border-radius:9px;display:grid;place-items:center;background:rgba(0,0,0,.3)}.mark:after{content:'▶';font-size:9px;margin-left:2px}
+.clock{text-align:right;text-shadow:0 2px 12px #000}.time{font-size:25px;font-weight:700;line-height:1}.date{font-size:10px;color:var(--muted);margin-top:4px;letter-spacing:1.4px}
+#hero{position:absolute;left:16px;right:16px;bottom:108px;max-width:410px;text-shadow:0 3px 20px rgba(0,0,0,.85)}
+.kicker{font-size:10px;font-weight:800;letter-spacing:2.2px;color:rgba(255,255,255,.75);margin-bottom:8px}.title{font-size:clamp(34px,10.5vw,56px);line-height:.92;font-weight:900;letter-spacing:-1.8px;text-transform:uppercase}.sub{font-size:13px;line-height:1.35;color:rgba(255,255,255,.78);margin-top:11px;max-width:330px}
+#searchWrap{position:absolute;top:94px;left:16px;right:16px;z-index:5}.search{height:46px;border:1px solid var(--line);background:rgba(7,9,13,.64);backdrop-filter:blur(18px);border-radius:15px;display:flex;align-items:center;padding:0 13px;box-shadow:0 12px 35px rgba(0,0,0,.22)}.search span{font-size:16px;opacity:.72;margin-right:8px}.search input{flex:1;border:0;outline:0;background:transparent;color:#fff;font-size:14px;min-width:0}.search input::placeholder{color:rgba(255,255,255,.55)}.go{border:0;background:rgba(255,255,255,.1);color:#fff;width:30px;height:30px;border-radius:10px}
+#tools{position:absolute;left:16px;bottom:67px;z-index:8}.toolBtn{border:1px solid var(--line);background:rgba(7,9,13,.67);backdrop-filter:blur(18px);color:#fff;border-radius:13px;padding:10px 13px;font-size:11px;font-weight:800;letter-spacing:1px}.menu{display:none;position:absolute;bottom:45px;left:0;width:175px;padding:7px;border:1px solid var(--line);background:rgba(6,8,12,.94);backdrop-filter:blur(22px);border-radius:15px;box-shadow:0 18px 45px #0008}.menu.open{display:block}.menu a{display:block;color:#fff;text-decoration:none;padding:11px;border-radius:10px;font-size:12px}.menu a:active{background:rgba(255,255,255,.12)}
+#dock{position:absolute;left:16px;right:16px;bottom:12px;z-index:7;display:flex;gap:8px;overflow-x:auto;padding-bottom:env(safe-area-inset-bottom);scrollbar-width:none}.shortcut{flex:0 0 auto;text-decoration:none;color:#fff;border:1px solid var(--line);background:rgba(7,9,13,.65);backdrop-filter:blur(17px);border-radius:13px;min-width:58px;height:47px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;font-size:9px;font-weight:700}.shortcut .ico{font-size:15px}.add{border-style:dashed}
+#nav{position:absolute;right:16px;bottom:67px;display:flex;align-items:center;gap:6px;z-index:7}.navBtn{width:31px;height:31px;border-radius:10px;border:1px solid var(--line);background:rgba(7,9,13,.62);color:#fff;font-size:13px}.counter{font-size:10px;color:#ddd;background:rgba(0,0,0,.35);padding:7px 9px;border-radius:9px}
+#privacy{position:absolute;right:16px;top:calc(env(safe-area-inset-top) + 50px);font-size:8px;letter-spacing:1px;color:rgba(255,255,255,.58);z-index:4}
+@media(min-width:700px){#hero{bottom:125px;max-width:620px}.title{font-size:64px}#searchWrap{left:auto;width:360px;right:18px;top:100px}#dock{max-width:620px}.brand{font-size:13px}}
+</style>
+</head>
+<body>
+<div id="stage"><div id="walls"></div><div id="shade"></div></div>
+<div id="top"><div class="brand"><div class="mark"></div>CINEMATIC</div><div class="clock"><div class="time" id="time">00:00</div><div class="date" id="date">MON • 00 JAN</div></div></div>
+<div id="privacy">PRIVATE SESSION • NO HISTORY SAVED</div>
+<div id="searchWrap"><form class="search" id="searchForm"><span>⌕</span><input id="query" autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false" placeholder="Search or enter a website"/><button class="go" aria-label="Go">↗</button></form></div>
+<section id="hero"><div class="kicker" id="kicker"></div><div class="title" id="title"></div><div class="sub" id="sub"></div></section>
+<div id="tools"><button class="toolBtn" id="toolBtn">✦ AI TOOLS ▾</button><div class="menu" id="menu"><a href="https://chatgpt.com/">ChatGPT</a><a href="https://gemini.google.com/">Gemini</a><a href="https://claude.ai/">Claude</a></div></div>
+<div id="nav"><button class="navBtn" id="prev">‹</button><div class="counter" id="counter">01 / 37</div><button class="navBtn" id="next">›</button></div>
+<nav id="dock">
+<a class="shortcut" href="https://www.google.com/"><span class="ico">G</span><span>Google</span></a>
+<a class="shortcut" href="https://www.youtube.com/"><span class="ico">▶</span><span>YouTube</span></a>
+<a class="shortcut" href="https://github.com/"><span class="ico">◉</span><span>GitHub</span></a>
+<a class="shortcut" href="https://web.whatsapp.com/"><span class="ico">◌</span><span>WhatsApp</span></a>
+<a class="shortcut" href="https://www.linkedin.com/"><span class="ico">in</span><span>LinkedIn</span></a>
+<a class="shortcut" href="https://drive.google.com/"><span class="ico">△</span><span>Drive</span></a>
+<button class="shortcut add" id="addShortcut"><span class="ico">＋</span><span>Add</span></button>
+</nav>
+<script>
+const base='wallpapers/';
+const items=[
+['Thor.jpeg','MARVEL • WORTHY','WHATEVER IT TAKES','Worthiness is earned, never given.'],
+['GAME OF THRONEs WALLPAPER#L01f397.jpeg','SEVEN KINGDOMS','WINTER IS HERE','Every throne demands a price.'],
+['John Wick (1).jpeg','JOHN WICK • LEGEND','THE LAST CONTRACT','The legend always finds a way back.'],
+['Believe In You_ Zen Panda Motivational Wallpaper.jpeg','MINDSET • WISDOM','BELIEVE IN YOURSELF','The strength you seek is already within.'],
+['Dr_ Doom.jpeg','MARVEL • VILLAIN','DOOM RISES','Power belongs to those who dare to claim it.'],
+['Money Heist 4k Wallpaper.jpeg','LA RESISTENCIA','THE GREATEST HEIST','Freedom is worth the risk.'],
+['Steve Harrington Wallpaper.jpeg','STRANGER THINGS','THE HERO WITH A BAT','Courage shows up when it matters most.'],
+['Thorr.jpeg','MARVEL • THUNDER GOD','BRING THE THUNDER','Let the storm speak for you.'],
+['john wick (2).jpeg','JOHN WICK • REVENGE','THE HUNT BEGINS','You can run. You cannot hide.'],
+['mother of dragon.jpeg','GAME OF THRONES','FIRE & BLOOD','A queen rises from the ashes.'],
+['MONEY HEIST.jpeg','LA RESISTENCIA','BELIEVE IN THE PLAN','Trust the plan. Trust the team.'],
+['Abid Abrar.jpeg','DARK CINEMA','NO TURNING BACK','Once you cross the line, everything changes.'],
+['Marvel Avengers Wallpaper 4K _ Epic Superhero Phone Background _ MCU Fan Art.jpeg','MARVEL • AVENGERS','EARTH’S MIGHTIEST','When the world needs heroes, they assemble.'],
+['John Wick.jpeg','JOHN WICK • ASSASSIN','NO SECOND CHANCES','One man. One mission. No way back.'],
+['download (1).jpeg','EPIC • LEGEND','RISE TO THE CALL','Destiny belongs to those who answer.'],
+['GAME OF THRONEs WALLPAPER#L01f397.jpeg','SEVEN KINGDOMS','THE GREAT GAME','Power changes everything.'],
+['Captain America.jpeg','MARVEL • FIRST AVENGER','A SYMBOL OF HOPE','Courage stands when everything falls.'],
+['Will Byers Wallpaper [ STRANGER THINGS S05 ].jpeg','STRANGER THINGS','THE DARKNESS WITHIN','Not every shadow wants to be found.'],
+['1115203926497918962.jpeg','DARK CINEMA','RISE FROM THE DARK','The hardest battles forge the strongest souls.'],
+['Thor.jpeg','MARVEL • GOD OF THUNDER','FOR ASGARD','A warrior rises when the realm calls.'],
+['Tyrion Lannister 4K Wallpaper _ Iconic Game of Thrones Design.jpeg','GAME OF THRONES','KNOW YOUR WORTH','Intelligence can be the sharpest weapon.'],
+['1145040274133064514.jpeg','DARK CINEMA','THE BATTLE AWAITS','Great power demands greater courage.'],
+['Money Heist 4k Wallpaper.jpeg','LA RESISTENCIA','THE PLAN','Every move has been calculated.'],
+['125326802125927671.jpeg','DARK CINEMA','EMBRACE THE DARKNESS','Every shadow hides a story.'],
+['Captain America.jpeg','MARVEL • AVENGER','STAND FOR SOMETHING','Heroes are defined by what they protect.'],
+['13370130139522991.jpeg','EPIC • WARRIOR','RISE ABOVE','Your greatest strength comes from within.'],
+['15340454978772216.jpeg','MINDSET','KEEP GOING','Progress begins with one more step.'],
+['209558188908264059.jpeg','DARK HERO','BECOME THE MONSTER','Sometimes darkness is the only way forward.'],
+['21814379443136858.jpeg','PIRATES • CAPTAIN','CAPTAIN JACK SPARROW','Trouble follows wherever he sails.'],
+['233272455695180198.jpeg','STRANGER THINGS','NOT TODAY','Some battles refuse to end.'],
+['23995810511620158.jpeg','MARVEL • LOKI','CHAOS HAS A PLAN','Every ending hides another beginning.'],
+['30891947440583191.jpeg','MARVEL • DAREDEVIL','THE DEVIL OF HELL’S KITCHEN','Justice never sleeps.'],
+['457889487134316913.jpeg','PIRATES • ADVENTURE','SAIL INTO THE STORM','The fearless never fear the horizon.'],
+['492159065553032181.jpeg','MARVEL • THUNDER GOD','GOD OF THUNDER','Power forged in battle.'],
+['4925880838791874.jpeg','STRANGER THINGS','INTO THE UPSIDE DOWN','One step beyond the ordinary.'],
+['5629568275871556.jpeg','PIRATES • LEGEND','THE SEA IS CALLING','Adventure begins where the map ends.'],
+['615726580352485322.jpeg','MARVEL • SPIRIT OF VENGEANCE','BURN IT ALL DOWN','Vengeance rides through the night.']
+];
+// Remove accidental duplicate source names while preserving a 37-slot cinematic rotation.
+const seen=new Set(), wallpapers=[]; for(const x of items){if(!seen.has(x[0])){seen.add(x[0]);wallpapers.push(x)}}
+// Add any supplied wallpaper not referenced above, so every photo is included exactly once.
+const supplied=['1115203926497918962.jpeg','1145040274133064514.jpeg','125326802125927671.jpeg','13370130139522991.jpeg','15340454978772216.jpeg','209558188908264059.jpeg','21814379443136858.jpeg','233272455695180198.jpeg','23995810511620158.jpeg','30891947440583191.jpeg','457889487134316913.jpeg','492159065553032181.jpeg','4925880838791874.jpeg','5629568275871556.jpeg','615726580352485322.jpeg','669629038397949734.jpeg','7881368095291187.jpeg','925349054709924971.jpeg','Abid Abrar.jpeg','Believe In You_ Zen Panda Motivational Wallpaper.jpeg','Captain America.jpeg','Dr_ Doom.jpeg','GAME OF THRONEs WALLPAPER#L01f397.jpeg','John Wick (1).jpeg','John Wick.jpeg','MONEY HEIST.jpeg','Marvel Avengers Wallpaper 4K _ Epic Superhero Phone Background _ MCU Fan Art.jpeg','Money Heist 4k Wallpaper.jpeg','Not today _.  . . .  #gameofthrones #arya #jonsnow#U2026','Steve Harrington Wallpaper.jpeg','Thor.jpeg','Thorr.jpeg','Tyrion Lannister 4K Wallpaper _ Iconic Game of Thrones Design.jpeg','Will Byers Wallpaper [ STRANGER THINGS S05 ].jpeg','download (1).jpeg','john wick (2).jpeg','mother of dragon.jpeg'];
+const fallback=['EPIC • CINEMA','NO TURNING BACK','The next frame tells another story.'];
+for(const f of supplied){if(!seen.has(f)){wallpapers.push([f,...fallback]);seen.add(f)}}
+// Fisher-Yates shuffle once per installation/session; avoid adjacent identical franchises where possible.
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}}
+shuffle(wallpapers);
+let index=0;
+const walls=document.getElementById('walls');
+wallpapers.forEach((w,i)=>{const d=document.createElement('div');d.className='wall'+(i===0?' active':'');d.style.backgroundImage=`url("${base}${encodeURIComponent(w[0])}")`;walls.appendChild(d)});
+const els={k:document.getElementById('kicker'),t:document.getElementById('title'),s:document.getElementById('sub'),c:document.getElementById('counter')};
+function render(){const w=wallpapers[index];document.querySelectorAll('.wall').forEach((el,i)=>el.classList.toggle('active',i===index));els.k.textContent=w[1];els.t.textContent=w[2];els.s.textContent=w[3];els.c.textContent=String(index+1).padStart(2,'0')+' / '+String(wallpapers.length).padStart(2,'0')}
+function next(){index=(index+1)%wallpapers.length;render()}function prev(){index=(index-1+wallpapers.length)%wallpapers.length;render()}
+document.getElementById('next').onclick=next;document.getElementById('prev').onclick=prev;
+setInterval(next,12000);
+function tick(){const d=new Date();document.getElementById('time').textContent=d.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});document.getElementById('date').textContent=d.toLocaleDateString([], {weekday:'short',day:'2-digit',month:'short'}).toUpperCase().replaceAll(',',' •')}tick();setInterval(tick,1000);
+const form=document.getElementById('searchForm'), q=document.getElementById('query');
+function go(){const v=q.value.trim();if(!v)return;let url;if(/^https?:\/\//i.test(v))url=v;else if(/^[\w-]+\.[a-z]{2,}(\/.*)?$/i.test(v))url='https://'+v;else url='https://www.google.com/search?q='+encodeURIComponent(v);location.href=url}
+form.addEventListener('submit',e=>{e.preventDefault();go()});
+document.getElementById('toolBtn').onclick=()=>document.getElementById('menu').classList.toggle('open');
+document.addEventListener('click',e=>{if(!e.target.closest('#tools'))document.getElementById('menu').classList.remove('open')});
+document.getElementById('addShortcut').onclick=()=>{const u=prompt('Website URL');if(!u)return;const a=document.createElement('a');a.className='shortcut';a.href=/^https?:\/\//i.test(u)?u:'https://'+u;a.innerHTML='<span class="ico">↗</span><span>Custom</span>';document.getElementById('dock').insertBefore(a,document.getElementById('addShortcut'))};
+render();
+</script>
+</body>
+</html>
