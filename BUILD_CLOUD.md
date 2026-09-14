@@ -1,40 +1,16 @@
-# Build Cinematic Browser APK in the cloud (no Android Studio)
+# Build Cinematic Browser APK with GitHub Actions (No Android Studio)
 
-## GitHub Actions — easiest method
+1. Create an empty GitHub repository.
+2. Upload **all contents of this folder** to the repository root. Make sure `.github/workflows/build-apk.yml` is included.
+3. Commit to the `main` branch.
+4. Open the repository's **Actions** tab.
+5. Select **Build Cinematic Browser APK**.
+6. Wait for the workflow to finish with a green check.
+7. Open the successful run and scroll to **Artifacts**.
+8. Download `CinematicBrowser-debug-apk`.
+9. Extract the downloaded artifact ZIP. Inside is `app-debug.apk`.
+10. Copy `app-debug.apk` to your Android phone and install it.
 
-1. Create/sign in to a GitHub account.
-2. Create a **new repository** (Public or Private).
-3. Upload **the contents of this project** to the repository root. `settings.gradle` and `app/` must be at the root level.
-4. Commit to the `main` branch.
-5. Open the repository's **Actions** tab.
-6. Select **Build Cinematic Browser APK**.
-7. Click **Run workflow** if it has not already run.
-8. Wait for the green checkmark.
-9. Open the completed workflow run.
-10. Under **Artifacts**, download `CinematicBrowser-debug-apk`.
-11. Extract it and copy `app-debug.apk` to your Android phone.
-12. Tap the APK and install it.
+The workflow installs Android SDK Platform 35 and Build Tools 35.0.0, uses Java 17 and Gradle 8.7, and builds the debug APK.
 
-The workflow installs Android SDK 35, Java 17 and Gradle 8.7 automatically. No Android Studio is required.
-
-## If GitHub warns about workflow permissions
-
-Go to repository **Settings → Actions → General** and ensure GitHub Actions are allowed to run. The workflow only needs to read repository contents and upload its build artifact.
-
-## What is built
-
-- Android application ID: `com.cinemabrowser.app`
-- Version: `1.0` (versionCode 1)
-- Portrait-first UI
-- 37 bundled mobile wallpapers
-- Cinematic dashboard
-- WebView browser navigation
-- Search / URL bar
-- ChatGPT / Gemini / Claude shortcuts
-- Google / YouTube / GitHub / WhatsApp / LinkedIn / Drive shortcuts
-- Session-only navigation state
-- Clears WebView cookies, cache, history, Web Storage and form data when the app session is closed/restarted
-
-### Privacy limitation
-
-The app is designed not to persist browsing history locally. Websites and online accounts can still receive and retain activity on their own servers.
+If the workflow fails, open the failed job and send the red error section. The warnings about GitHub Actions runtime versions are not the same thing as a Gradle build failure.

@@ -1,18 +1,18 @@
-# Cinematic Browser — Android
+# Cinematic Browser
 
-A portrait-first cinematic browser dashboard with bundled wallpapers and a private-session design.
+Android WebView-based private-session cinematic browser dashboard.
+
+## Included
+- 37 bundled mobile wallpapers
+- Cinematic wallpaper captions
+- Mobile portrait-first dashboard
+- Search / URL navigation
+- AI Tools shortcuts
+- Browser back navigation
+- No intentional persistent local browsing history
+- Cache/cookies/Web Storage cleared when a session is initialized/ended
+- Custom launcher icon
 
 ## Cloud build
-
-See `BUILD_CLOUD.md` for the no-Android-Studio GitHub Actions build steps.
-
-## Project root
-
-`settings.gradle`, `build.gradle`, `app/`, and `.github/` belong directly in the repository root.
-
-## App
-
-- Application ID: `com.cinemabrowser.app`
-- Min SDK: 24
-- Target/Compile SDK: 35
-- Java/Kotlin target: 17
+Use `.github/workflows/build-apk.yml` with GitHub Actions. No Android Studio is required.
+See `BUILD_CLOUD.md` for exact steps.
